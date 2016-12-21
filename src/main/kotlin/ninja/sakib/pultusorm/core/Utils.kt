@@ -260,6 +260,10 @@ fun isAndroidPlatform(): Boolean {
     }
 }
 
+/**
+ * Method to turn a ResultSet from SQL into a JSON Object
+ * @return JsonObject
+ */
 fun SQLResultToObject(fields: Array<Field>, result: ResultSet): JsonObject {
     val it: JsonObject = JsonObject()
     fields.filter { isIgnoreField(it).not() }
