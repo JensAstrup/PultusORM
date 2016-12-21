@@ -8,6 +8,7 @@ import ninja.sakib.pultusorm.annotations.*
 import ninja.sakib.pultusorm.exceptions.PultusORMException
 import java.lang.reflect.Field
 import java.lang.reflect.Type
+import java.sql.ResultSet
 
 /**
  * := Coded with love by Sakib Sami on 9/27/16.
@@ -257,4 +258,32 @@ fun isAndroidPlatform(): Boolean {
     } catch (exception: Exception) {
         return false
     }
+}
+
+fun SQLResultToObject(fields: Array<Field>, result: ResultSet): JsonObject {
+    val it: JsonObject = JsonObject()
+    fields.filter { isIgnoreField(it).not() }
+            .forEach { field ->
+                if (isString(field.genericType)) {
+                    it.add(field.name, result.getString(field.name))
+                } else if (isInt(field.genericType)) {
+                    it.add(field.name, result.getInt(field.name))
+                } else if (isDouble(field.genericType)) {
+                    it.add(field.name, result.getDouble(field.name))
+                } else if (isFloat(field.genericType)) {
+                    it.add(field.name, result.getFloat(field.name))
+                } else if (isLong(field.genericType)) {
+                    it.add(field.name, result.getLong(field.name))
+                } else if (isChar(field.genericType)) {
+                    it.add(field.name, result.getString(field.name))
+                } else if (isBoolean(field.genericType)) {
+                    val temp = result.getInt(field.name)
+                    if (temp == 0)
+                        it.add(field.name, false)
+                    else it.add(field.name, true)
+                } else {
+                    throwback("Unsupported data type.")
+                }
+            }
+    return it
 }

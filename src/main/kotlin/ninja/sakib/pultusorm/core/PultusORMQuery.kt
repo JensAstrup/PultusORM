@@ -1,6 +1,7 @@
 package ninja.sakib.pultusorm.core
 
 import com.eclipsesource.json.JsonObject
+import hello.User
 import ninja.sakib.pultusorm.callbacks.Callback
 import ninja.sakib.pultusorm.exceptions.PultusORMException
 import ninja.sakib.pultusorm.system.SqliteSystem
@@ -95,32 +96,9 @@ class PultusORMQuery(connection: Connection) {
             val result: ResultSet = statement.executeQuery(query)
 
             while (result.next()) {
-                val it: JsonObject = JsonObject()
+                val fields = clazz.javaClass.declaredFields + clazz.javaClass.superclass.declaredFields
+                val it: JsonObject = SQLResultToObject(fields, result)
 
-                for (field in clazz.javaClass.declaredFields) {
-                    if (isIgnoreField(field).not()) {
-                        if (isString(field.genericType)) {
-                            it.add(field.name, result.getString(field.name))
-                        } else if (isInt(field.genericType)) {
-                            it.add(field.name, result.getInt(field.name))
-                        } else if (isDouble(field.genericType)) {
-                            it.add(field.name, result.getDouble(field.name))
-                        } else if (isFloat(field.genericType)) {
-                            it.add(field.name, result.getFloat(field.name))
-                        } else if (isLong(field.genericType)) {
-                            it.add(field.name, result.getLong(field.name))
-                        } else if (isChar(field.genericType)) {
-                            it.add(field.name, result.getString(field.name))
-                        } else if (isBoolean(field.genericType)) {
-                            val temp = result.getInt(field.name)
-                            if (temp == 0)
-                                it.add(field.name, false)
-                            else it.add(field.name, true)
-                        } else {
-                            throwback("Unsupported data type.")
-                        }
-                    }
-                }
                 resultList.add(jsonAsObject(clazz, it))
             }
         } catch (exception: Exception) {
@@ -141,32 +119,8 @@ class PultusORMQuery(connection: Connection) {
         val resultList: MutableList<Any> = mutableListOf()
 
         while (result.next()) {
-            val it: JsonObject = JsonObject()
-
-            for (field in clazz.javaClass.declaredFields) {
-                if (isIgnoreField(field).not()) {
-                    if (isString(field.genericType)) {
-                        it.add(field.name, result.getString(field.name))
-                    } else if (isInt(field.genericType)) {
-                        it.add(field.name, result.getInt(field.name))
-                    } else if (isDouble(field.genericType)) {
-                        it.add(field.name, result.getDouble(field.name))
-                    } else if (isFloat(field.genericType)) {
-                        it.add(field.name, result.getFloat(field.name))
-                    } else if (isLong(field.genericType)) {
-                        it.add(field.name, result.getLong(field.name))
-                    } else if (isChar(field.genericType)) {
-                        it.add(field.name, result.getString(field.name))
-                    } else if (isBoolean(field.genericType)) {
-                        val temp = result.getInt(field.name)
-                        if (temp == 0)
-                            it.add(field.name, false)
-                        else it.add(field.name, true)
-                    } else {
-                        throwback("Unsupported data type.")
-                    }
-                }
-            }
+            val fields = clazz.javaClass.declaredFields + clazz.javaClass.superclass.declaredFields
+            val it: JsonObject = SQLResultToObject(fields, result)
             resultList.add(jsonAsObject(clazz, it))
         }
         return resultList
@@ -417,7 +371,7 @@ class PultusORMQuery(connection: Connection) {
                         keyBuilder.append(",")
                         valueBuilder.append(",")
                     }
-                    keyBuilder.append("${field.name}")
+                    keyBuilder.append(field.name)
                     if (objectAsJson.get(field.name).isString)
                         valueBuilder.append("'${objectAsJson.getString(field.name, "")}'")
                     else if (objectAsJson.get(field.name).isBoolean) {

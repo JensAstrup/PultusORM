@@ -18,7 +18,7 @@ class SqliteSystem {
 
     companion object {
         /**
-         * Method to get sqlite system table name
+         * Method to get sqlite ninja.sakib.pultusorm.system table name
          * @return String
          */
         fun getTableName(): String {
@@ -26,7 +26,7 @@ class SqliteSystem {
         }
 
         /**
-         * Method to get sqlite system temporary table name
+         * Method to get sqlite ninja.sakib.pultusorm.system temporary table name
          * @return String
          */
         fun getTempTableName(): String {
