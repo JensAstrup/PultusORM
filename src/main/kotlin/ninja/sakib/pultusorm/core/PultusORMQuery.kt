@@ -362,7 +362,7 @@ class PultusORMQuery(connection: Connection) {
 
     inner class Builder {
         fun create(clazz: Any): String {
-            if (clazz.javaClass.declaredFields.size == 0)
+            if (clazz.javaClass.declaredFields.isEmpty())
                 throwback("Class without field is not allowed.")
 
             val queryBuilder = StringBuilder()
@@ -381,6 +381,20 @@ class PultusORMQuery(connection: Connection) {
                     isFirst = false
                 }
             }
+            // Check the superclass for declared fields
+            clazz.javaClass.superclass.declaredFields
+                    // Are there any that do not have the Ignore annotation?
+                    .filter { isIgnoreField(it).not() }
+                    // Process like above (make a separate method?)
+                    .forEach { if (isFirst.not())
+                        queryBuilder.append(", ")
+
+                        val fieldPart: String = "${it.name} ${typeToSQL(it.genericType)} ${toPrimaryKey(it)} " +
+                                "${toAutoIncrement(it)} ${toNotNull(it)} ${toUnique(it)}"
+                        queryBuilder.append(fieldPart.trim())
+
+                        isFirst = false }
+
             queryBuilder.append(");")
             return queryBuilder.toString()
         }
